@@ -1,0 +1,7 @@
+[0m[[0m[31merror[0m] [0m[0m/home/mgonzalo/Escritorio/research/feynman machine/src/main/scala/MainStream.scala:3:8: Symbol 'type org.apache.spark.Logging' is missing from the classpath.[0m
+[0m[[0m[31merror[0m] [0m[0mThis symbol is required by 'class org.apache.spark.streaming.StreamingContext'.[0m
+[0m[[0m[31merror[0m] [0m[0mMake sure that type Logging is in your classpath and check for conflicting dependencies with `-Ylog-classpath`.[0m
+[0m[[0m[31merror[0m] [0m[0mA full rebuild may help if 'StreamingContext.class' was compiled against an incompatible version of org.apache.spark.[0m
+[0m[[0m[31merror[0m] [0m[0mimport org.apache.spark.streaming.StreamingContext._[0m
+[0m[[0m[31merror[0m] [0m[0m       ^[0m
+[0m[[0m[31merror[0m] [0m[0mone error found[0m
