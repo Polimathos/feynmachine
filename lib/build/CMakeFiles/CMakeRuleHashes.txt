@@ -1,0 +1,2 @@
+# Hashes of file build rules.
+5707c2336a276b5dc7e71864432c0041 src/main/java/com/ogmacorp/ogmaneo/jogmaneoJAVA_wrap.cxx

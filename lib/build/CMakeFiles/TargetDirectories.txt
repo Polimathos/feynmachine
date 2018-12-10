@@ -1,0 +1,3 @@
+/home/mgonzalo/Escritorio/research/OgmaNeo/Java/build/CMakeFiles/rebuild_cache.dir
+/home/mgonzalo/Escritorio/research/OgmaNeo/Java/build/CMakeFiles/JOgmaNeo.dir
+/home/mgonzalo/Escritorio/research/OgmaNeo/Java/build/CMakeFiles/edit_cache.dir
