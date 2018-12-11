@@ -4,8 +4,12 @@ import org.apache.spark._
 import org.apache.spark.streaming._
 import com.ogmacorp.ogmaneo._
 import java.io._
+import model.FeynmanMachine
 
 object Main extends App {
+  val fM = FeynmanMachine
+
+
 /*  val conf = new SparkConf().setMaster("local[2]").setAppName("NetworkWordCount")
   val ssc = new StreamingContext(conf, Seconds(1))
 
@@ -22,7 +26,7 @@ object Main extends App {
 
   ssc.awaitTermination()*/
 
-  val numSimSteps = 100
+/*  val numSimSteps = 100
 
   val res = new Resources()
   res.create(ComputeSystem.DeviceType._gpu)
@@ -100,5 +104,5 @@ object Main extends App {
       System.out.println("Saving hierarchy to Example.opr")
       hierarchy.save(res.getComputeSystem, "Example.opr")
     }
-  }
+  }*/
 }
