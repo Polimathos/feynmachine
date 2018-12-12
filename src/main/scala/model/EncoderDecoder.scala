@@ -20,7 +20,20 @@ class EncoderDecoder {
       Array.fill(rowIndices.length)(1),
       isTransposed = true)
 
-    return encodedMatrix.toArray
+    encodedMatrix.toArray
+  }
+
+  def parseBot(rawmessage:String,answer:String):String={
+    if (rawmessage.tail.isEmpty) {
+      return answer
+    }
+    if (rawmessage.head.equals('(')) {
+      val index = rawmessage.tail.substring(0,rawmessage.tail.indexOf(",")).toInt
+      parseBot(rawmessage.tail, answer + chars.slice(index, index+1).apply(0))
+    }
+    else {
+      parseBot(rawmessage.tail,answer)
+    }
   }
 
   def decode(botSays:Array[Double]): String ={

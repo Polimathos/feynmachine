@@ -36,22 +36,36 @@ val b =botSaysMatrix.toSparse.transpose
 
 
 
+/*
 b.toString()
 
 
 "(djas(sak".map(f => println(f.equals('(')))
 
-"(d,jas,(s,ak".substring(0,"(d,jas,(s,ak".indexOf(","))
+val ind = "8,jas,(s,ak".substring(0,"8,jas,(s,ak".indexOf(",")).toInt
+
+var dummyList = chars.slice(ind,ind+1)
+val indxe = 8
+var answer = ""
 
 
-def parseBot(rawmessage:String,answer:List[Int]):List[Int]={
+answer + chars.slice(ind, ind+1).apply(0)
+
+println(answer)
+
+
+def parseBot(rawmessage:String,answer:String):String={
   if (rawmessage.tail.isEmpty) {
     return answer
   }
   if (rawmessage.head.equals('(')) {
-    val index = rawmessage.tail.indexOf(",")
-    val 
+    val index = rawmessage.tail.substring(0,rawmessage.tail.indexOf(",")).toInt
+    parseBot(rawmessage.tail, answer + chars.slice(index, index+1).apply(0))
+  }
+  else {
+    parseBot(rawmessage.tail,answer)
   }
 }
+*/
 
 
