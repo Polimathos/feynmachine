@@ -4,10 +4,11 @@ import org.apache.spark._
 import org.apache.spark.streaming._
 import com.ogmacorp.ogmaneo._
 import java.io._
-import model.FeynmanMachine
+import model.{FeynmanMachine,EncoderDecoder}
 
 object Main extends App {
-  val fM = FeynmanMachine
+  val encoderDecoder = new EncoderDecoder
+  val feynmanMachine = new FeynmanMachine(encoderDecoder.maxMessageLength,encoderDecoder.chars.length)
 
 
 /*  val conf = new SparkConf().setMaster("local[2]").setAppName("NetworkWordCount")

@@ -5,17 +5,13 @@ import java.io._
 
 import org.apache.spark.mllib.linalg.DenseMatrix
 
-object FeynmanMachine {
-//  val numSimSteps = 100
+class FeynmanMachine (val h: Int, val w: Int) {
 
   val res = new Resources()
   res.create(ComputeSystem.DeviceType._gpu)
 
   val arch = new Architect
   arch.initialize(1234, res)
-
-  val w = 4
-  val h = 4
 
   val inputParams = arch.addInputLayer(new Vec2i(w, h))
   inputParams.setValue("in_p_alpha", 0.02f)
@@ -38,8 +34,22 @@ object FeynmanMachine {
     }
   }
   val inputField = new ValueField2D(new Vec2i(w, h))
-  def hierarchyStep(inputMatrix:DenseMatrix):DenseMatrix = {
+  def hierarchyStep(inputArray:Array[Double]):vectorf = {
+    var ind1 = 0
+    for (arr <- inputArray.grouped(w)) {
+      var ind2 = 0
+      for (elem <- arr){
+        inputField.setValue(new Vec2i(ind1,ind2), elem.toFloat)
+        ind2 += 1
+      }
+      ind1 += 1
+    }
+    val inputVector = new vectorvf
+    inputVector.add(inputField)
+    hierarchy.activate(inputVector)
+    hierarchy.learn(inputVector)
 
+    val prediction = hierarchy.getPredictions.get(0).getData
   }
 //  val inputField = new ValueField2D(new Vec2i(w, h))
 

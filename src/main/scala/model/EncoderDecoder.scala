@@ -1,6 +1,6 @@
 package model
 
-import org.apache.spark.mllib.linalg.{SparseMatrix, DenseMatrix}
+import org.apache.spark.mllib.linalg.{SparseMatrix}
 
 class EncoderDecoder {
   val chars = List(
@@ -18,26 +18,33 @@ class EncoderDecoder {
         Array.fill(maxMessageLength-rowIndices.length)(rowIndices.length),
       rowIndices.toArray,
       Array.fill(rowIndices.length)(1),
-      isTransposed = true)
+    )
 
     encodedMatrix.toArray
   }
 
-  def parseBot(rawmessage:String,answer:String):String={
+  def parseSparse(rawmessage:String,answer:String):String={
+    /* This method parses a string matrix that has been promotes to a string*/
     if (rawmessage.tail.isEmpty) {
       return answer
     }
     if (rawmessage.head.equals('(')) {
       val index = rawmessage.tail.substring(0,rawmessage.tail.indexOf(",")).toInt
-      parseBot(rawmessage.tail, answer + chars.slice(index, index+1).apply(0))
+      parseSparse(rawmessage.tail, answer + chars.slice(index, index+1).head)
     }
     else {
-      parseBot(rawmessage.tail,answer)
+      parseSparse(rawmessage.tail,answer)
     }
   }
 
-  def decode(botSays:Array[Double]): String ={
-    val botSaysMatrix = new DenseMatrix(maxMessageLength,chars.length,botSays)
-
+  def decodeArray(botSays:Array[Double]): String ={
+    //val botSaysMatrix = new DenseMatrix(maxMessageLength,chars.length,botSays)
+    var decodedAnswer = ""
+    for (elem <- botSays.grouped(maxMessageLength)) {
+      val valIndexTuple = elem.zipWithIndex.maxBy(f => f._1)
+      val letter = chars.slice(valIndexTuple._2,valIndexTuple._2 + 1)
+      decodedAnswer += letter.head
+    }
+    decodedAnswer
   }
 }
