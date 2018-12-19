@@ -31,10 +31,10 @@ class FeynmanMachine (val h: Int, val w: Int) {
   private val serializationEnabled = true
 
   if (serializationEnabled) {
-    val f = new File("Example.opr")
+    val f = new File("savedHierarchy.opr")
     if (f.exists && !f.isDirectory) {
-      System.out.println("Loading hierarchy from Example.opr")
-      hierarchy.load(res.getComputeSystem, "Example.opr")
+      System.out.println("Loading hierarchy from savedHierarchy.opr")
+      hierarchy.load(res.getComputeSystem, "savedHierarchy.opr")
     }
   }
 
@@ -80,8 +80,8 @@ class FeynmanMachine (val h: Int, val w: Int) {
     val predictionInsideArray = parsePrediction(predictionInside)
 
     if (serializationEnabled) {
-      System.out.println("Saving hierarchy to Example.opr")
-      hierarchy.save(res.getComputeSystem, "Example.opr")
+      System.out.println("Saving hierarchy to savedHierarchy.opr")
+      hierarchy.save(res.getComputeSystem, "savedHierarchy.opr")
     }
     (predictionOutsideArray,predictionInsideArray)
 
