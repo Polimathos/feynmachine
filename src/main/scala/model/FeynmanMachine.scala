@@ -11,19 +11,29 @@ class FeynmanMachine (val h: Int, val w: Int) {
   res.create(ComputeSystem.DeviceType._gpu)
 
   val arch = new Architect
-  arch.initialize(1234, res)
+  arch.initialize(Configuration.architectSeed, res)
 
   val inputOutside = arch.addInputLayer(new Vec2i(w, h))
-  inputOutside.setValue("in_p_alpha", 0.02f)
-  inputOutside.setValue("in_p_radius", 8)
+  inputOutside.setValue("in_p_alpha", Configuration.in_p_alpha)
+  inputOutside.setValue("in_p_radius", Configuration.in_p_radius)
 
   val inputInside = arch.addInputLayer(new Vec2i(w, h))
-  inputInside.setValue("in_p_alpha", 0.02f)
-  inputInside.setValue("in_p_radius", 8)
+  inputInside.setValue("in_p_alpha", Configuration.in_p_alpha)
+  inputInside.setValue("in_p_radius", Configuration.in_p_radius)
 
-  for (i <- 0 to 2){
-    val layerParams = arch.addHigherLayer(new Vec2i(36, 36), SparseFeaturesType._chunk)
-    layerParams.setValue("sfc_numSamples", 2)
+  for (i <- 0 to Configuration.layerNumber){
+    val layerParams = arch.addHigherLayer(
+      new Vec2i(Configuration.encoderSize,Configuration.encoderSize),
+      SparseFeaturesType._chunk)
+    layerParams.setValue("sfc_numSamples", Configuration.sfc_numSamples)
+    layerParams.setValue("sfc_chunkSize", Configuration.sfc_chunkSize)
+    layerParams.setValue("sfc_ff_radius", Configuration.sfc_ff_radius)
+    layerParams.setValue("sfc_gamma", Configuration.sfc_gamma)
+    layerParams.setValue("hl_poolSteps", Configuration.hl_poolSteps)
+    layerParams.setValue("p_alpha", Configuration.p_alpha)
+    layerParams.setValue("p_beta", Configuration.p_beta)
+    layerParams.setValue("p_radius", Configuration.p_radius)
+
   }
 
   val hierarchy = arch.generateHierarchy
@@ -54,6 +64,13 @@ class FeynmanMachine (val h: Int, val w: Int) {
     }
   }
 
+  def saveHierarchy: Unit ={
+    if (serializationEnabled) {
+      System.out.println("Saving hierarchy to savedHierarchy.opr")
+      hierarchy.save(res.getComputeSystem, "savedHierarchy.opr")
+    }
+  }
+
   def parsePrediction(prediction:vectorf):Array[Double] ={
     var responseArray = Array[Double]()
     for (el <- 0 to prediction.size().toInt-1){
@@ -79,10 +96,6 @@ class FeynmanMachine (val h: Int, val w: Int) {
     val predictionOutsideArray = parsePrediction(predictionOutside)
     val predictionInsideArray = parsePrediction(predictionInside)
 
-    if (serializationEnabled) {
-      System.out.println("Saving hierarchy to savedHierarchy.opr")
-      hierarchy.save(res.getComputeSystem, "savedHierarchy.opr")
-    }
     (predictionOutsideArray,predictionInsideArray)
 
   }

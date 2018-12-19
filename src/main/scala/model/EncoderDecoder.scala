@@ -3,14 +3,15 @@ package model
 import org.apache.spark.mllib.linalg.{SparseMatrix}
 
 class EncoderDecoder{
-  val chars = List(
-    " ", "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t",
-    "u", "v", "w", "x", "y", "z", "ñ", ",", ".", "?", "!", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9"
-  )
-  val maxMessageLength = 140
+  val chars = (" ñ!,.?".toCharArray ++ ('a' to 'z') ++ ('0' to '9')).map(_.toString).toList
+
+  val maxMessageLength = Configuration.maxMessageLength
 
   def encode(message: String): Array[Double] ={
-    val rowIndices = message.map(f => chars.indexOf(f.toString.toLowerCase))
+    val rowIndices = message.map(f => chars.indexOf(f.toString.toLowerCase) match{
+      case -1 => 0
+      case x => x
+    })
 
     val encodedMatrix = new SparseMatrix(chars.length,
       maxMessageLength,
