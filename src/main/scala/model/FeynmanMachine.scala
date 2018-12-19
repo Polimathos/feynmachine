@@ -13,12 +13,16 @@ class FeynmanMachine (val h: Int, val w: Int) {
   val arch = new Architect
   arch.initialize(1234, res)
 
-  val inputParams = arch.addInputLayer(new Vec2i(w, h))
-  inputParams.setValue("in_p_alpha", 0.02f)
-  inputParams.setValue("in_p_radius", 8)
+  val inputOutside = arch.addInputLayer(new Vec2i(w, h))
+  inputOutside.setValue("in_p_alpha", 0.02f)
+  inputOutside.setValue("in_p_radius", 8)
+
+  val inputInside = arch.addInputLayer(new Vec2i(w, h))
+  inputInside.setValue("in_p_alpha", 0.02f)
+  inputInside.setValue("in_p_radius", 8)
 
   for (i <- 0 to 2){
-    val layerParams = arch.addHigherLayer(new Vec2i(32, 32), SparseFeaturesType._chunk)
+    val layerParams = arch.addHigherLayer(new Vec2i(36, 36), SparseFeaturesType._chunk)
     layerParams.setValue("sfc_numSamples", 2)
   }
 
@@ -33,77 +37,63 @@ class FeynmanMachine (val h: Int, val w: Int) {
       hierarchy.load(res.getComputeSystem, "Example.opr")
     }
   }
-  val inputField = new ValueField2D(new Vec2i(w, h))
-  def hierarchyStep(inputArray:Array[Double]):vectorf = {
+
+  val inputOutsideField = new ValueField2D(new Vec2i(w, h))
+  val inputInsideField = new ValueField2D(new Vec2i(w, h))
+
+  def fieldsValueSetter(zippedArrays:Array[(Double, Double)]): Unit ={
     var ind1 = 0
-    for (arr <- inputArray.grouped(w)) {
+    for (zippedRow <- zippedArrays.grouped(h)) {
       var ind2 = 0
-      for (elem <- arr){
-        inputField.setValue(new Vec2i(ind1,ind2), elem.toFloat)
+      for (elem <- zippedRow){
+        inputOutsideField.setValue(new Vec2i(ind1,ind2), elem._1.toFloat)
+        inputInsideField.setValue(new Vec2i(ind1,ind2), elem._2.toFloat)
         ind2 += 1
       }
       ind1 += 1
     }
+  }
+
+  def parsePrediction(prediction:vectorf):Array[Double] ={
+    var responseArray = Array[Double]()
+    for (el <- 0 to prediction.size().toInt-1){
+      responseArray ++= Array(prediction.get(el).toDouble)
+    }
+    responseArray
+  }
+
+  def hierarchyStep(outsideArray:Array[Double],insideArray:Array[Double]):(Array[Double],Array[Double]) = {
+    val zippedArrays = outsideArray.zip(insideArray)
+
+    fieldsValueSetter(zippedArrays)
+
     val inputVector = new vectorvf
-    inputVector.add(inputField)
+    inputVector.add(inputOutsideField)
+    inputVector.add(inputInsideField)
     hierarchy.activate(inputVector)
     hierarchy.learn(inputVector)
 
-    val prediction = hierarchy.getPredictions.get(0).getData
-  }
-//  val inputField = new ValueField2D(new Vec2i(w, h))
+    val predictionOutside = hierarchy.getPredictions.get(0).getData
+    val predictionInside = hierarchy.getPredictions.get(1).getData
 
-/*  for {
-    y <- 0 to h
-    x <- 0 to w
-  } {
-    inputField.setValue(new Vec2i(x, y), (y * w) + x)
-  }
-  */
+    val predictionOutsideArray = parsePrediction(predictionOutside)
+    val predictionInsideArray = parsePrediction(predictionInside)
 
-
-/*
-  System.out.println("Stepping the hierarchy...")
-
-  for (i <- 0 to numSimSteps) {
-    val inputVector = new vectorvf
-    inputVector.add(inputField)
-    hierarchy.activate(inputVector)
-    hierarchy.learn(inputVector)
-    //System.out.print(".");
-  }
-*/
-
-//  System.out.println()
-
-  def hierarchyStep() = {
-    val inputField = new ValueField2D(new Vec2i(w, h))
-  }
-
-  val prediction = hierarchy.getPredictions.get(0)
-
-  for(i <- 0 to numSimSteps) {
-    System.out.println(i)
-    for {
-      y <- 0 to h
-      x <- 0 to w
-    } {
-      System.out.print(inputField.getValue(new Vec2i(x, y)).toString+" ")
-    }
-    System.out.println()
-
-    System.out.print("Prediction :")
-    for {
-      y <- 0 to h
-      x <- 0 to w
-    } {
-      System.out.print(prediction.getValue(new Vec2i(x, y)).toString+" ")
-    }
-    System.out.println()
-    System.out.println(i)
     if (serializationEnabled) {
       System.out.println("Saving hierarchy to Example.opr")
       hierarchy.save(res.getComputeSystem, "Example.opr")
     }
+    (predictionOutsideArray,predictionInsideArray)
+
+  }
+
+  def trainingSwitch(input:String, currentMode:Boolean):Boolean={
+    if (input.contains("!train")){
+      return true
+    }
+    if (input.contains("!talk")){
+      return false
+    }
+    return currentMode
   }
 }

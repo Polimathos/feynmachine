@@ -2,7 +2,7 @@ package model
 
 import org.apache.spark.mllib.linalg.{SparseMatrix}
 
-class EncoderDecoder {
+class EncoderDecoder{
   val chars = List(
     " ", "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t",
     "u", "v", "w", "x", "y", "z", "ñ", ",", ".", "?", "!", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9"
@@ -12,14 +12,13 @@ class EncoderDecoder {
   def encode(message: String): Array[Double] ={
     val rowIndices = message.map(f => chars.indexOf(f.toString.toLowerCase))
 
-    val encodedMatrix = new SparseMatrix(maxMessageLength,
-      chars.length,
+    val encodedMatrix = new SparseMatrix(chars.length,
+      maxMessageLength,
       (0 to rowIndices.length).toArray++
         Array.fill(maxMessageLength-rowIndices.length)(rowIndices.length),
       rowIndices.toArray,
-      Array.fill(rowIndices.length)(1),
+      Array.fill(rowIndices.length)(1)
     )
-
     encodedMatrix.toArray
   }
 
@@ -37,13 +36,14 @@ class EncoderDecoder {
     }
   }
 
-  def decodeArray(botSays:Array[Double]): String ={
+  def decode(botSays:Array[Double]): String ={
     //val botSaysMatrix = new DenseMatrix(maxMessageLength,chars.length,botSays)
+
     var decodedAnswer = ""
-    for (elem <- botSays.grouped(maxMessageLength)) {
+    for (elem <- botSays.grouped(chars.length)) {
       val valIndexTuple = elem.zipWithIndex.maxBy(f => f._1)
-      val letter = chars.slice(valIndexTuple._2,valIndexTuple._2 + 1)
-      decodedAnswer += letter.head
+      val letter = chars(valIndexTuple._2)
+      decodedAnswer += letter
     }
     decodedAnswer
   }
