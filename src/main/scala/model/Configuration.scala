@@ -41,5 +41,5 @@ object Configuration {
   //Weight initialization range
   val sfc_initWeightRange:(Int,Int)=(-1,1)
 
-  val conversationsFile = "/home/mgonzalo/Escritorio/research/feynman machine/src/main/resources/conversations.txt"
+  val conversationsFile = "/home/mgonzalo/Escritorio/research/feynman machine/src/main/resources/conversationsTraining.txt"
 }

@@ -3,12 +3,16 @@ package model
 import org.apache.spark.mllib.linalg.{SparseMatrix}
 
 class EncoderDecoder{
-  val chars = (" ñ!,.?".toCharArray ++ ('a' to 'z') ++ ('0' to '9')).map(_.toString).toList
+  val chars = (" ñ!,.?-".toCharArray
+    ++ ('a' to 'z')
+    //++ ('0' to '9')
+    ).map(_.toString).toList
 
   val maxMessageLength = Configuration.maxMessageLength
 
   def encode(message: String): Array[Double] ={
-    val rowIndices = message.map(f => chars.indexOf(f.toString.toLowerCase) match{
+    val messageCut = message.take(maxMessageLength)
+    val rowIndices = messageCut.map(f => chars.indexOf(f.toString.toLowerCase) match{
       case -1 => 0
       case x => x
     })
