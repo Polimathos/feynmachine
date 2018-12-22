@@ -1,6 +1,7 @@
 import scala.io.Source
 import java.io.PrintWriter
 
+import model.Configuration
 import org.apache.spark.mllib.linalg.SparseMatrix
 
 val chars = (" ñ!,.?-".toCharArray
@@ -52,19 +53,28 @@ def decode(botSays:Array[Double]): String = {
 def decodeWordForWord(responseArrays:Array[Array[Double]]):String = {
   var response = ""
   for (array <- responseArrays) {
-    response += decode(array).trim + " "
+    val decoded = decode(array).trim
+    if (!decoded.isEmpty){
+      response += decoded +" "
+    }
   }
   response
 }
-
-def synchronizeInputArrays(inputArray:Array[Array[Double]],
-                           trainingArray:Array[Array[Double]]):(Array[Array[Double]],Array[Array[Double]]) = {
-  val totalLength = inputArray.length + trainingArray.length
-  val arrayLength = maxMessageLength * chars.length
+def synchronizeInputArrays(tuple:(Array[Array[Double]],Array[Array[Double]])):(Array[Array[Double]],Array[Array[Double]]) = {
+  val inputArray = tuple._1
+  val trainingArray = tuple._2
+  val maxNumberOfWords:Int = 30
+  val arrayLength = 20 * chars.length
   val completeInput = inputArray ++
-    Array.fill[Array[Double]](trainingArray.length)(Array.fill[Double](arrayLength)(0))
-  val completeTraining = Array.fill[Array[Double]](inputArray.length)(Array.fill[Double](arrayLength)(0)) ++
-    trainingArray
+    Array.fill[Array[Double]](maxNumberOfWords)(Array.fill[Double](arrayLength)(0))
+  val completeTraining = if (trainingArray.length>=maxNumberOfWords) {
+    trainingArray.take(maxNumberOfWords)
+  } else {
+    Array.fill[Array[Double]](inputArray.length)(Array.fill[Double](arrayLength)(0)) ++
+      trainingArray ++
+      Array.fill[Array[Double]](
+        maxNumberOfWords - trainingArray.length)(Array.fill[Double](arrayLength)(0))
+  }
   (completeInput,completeTraining)
 }
 
@@ -75,14 +85,14 @@ def agentRespond(inputArray:Array[Double], trainExampleArray:Array[Double]):(Str
   (nextInputPrediction,machineResponse)
 }
 
-def agentRespondWordForWord(messageArrayTuple:(Array[Array[Double]],Array[Array[Double]])):(String, String) ={
+def agentRespondWordForWord(messageArrayTuple:(Array[Array[Double]],Array[Array[Double]])):(Array[Array[Double]], Array[Array[Double]]) ={
   val zippedArrays = messageArrayTuple._1.zip(messageArrayTuple._2)
-  var nextInputPrediction = ""
-  var machineResponse = ""
+  var nextInputPrediction = Array[Array[Double]]()
+  var machineResponse = Array[Array[Double]]()
   for (tuple <- zippedArrays){
-    val (nextInputWord, machineWord) = agentRespond(tuple._1, tuple._2)
-    nextInputPrediction += nextInputWord
-    machineResponse += machineWord
+    val (nextInputWord, machineWord) = (tuple._1, tuple._2)
+    nextInputPrediction ++= Array(nextInputWord)
+    machineResponse ++= Array(machineWord)
   }
   (nextInputPrediction,machineResponse)
 }
@@ -90,15 +100,29 @@ def agentRespondWordForWord(messageArrayTuple:(Array[Array[Double]],Array[Array[
 val arr = encodeWordForWord("hello my baby")
 val arr2 = encodeWordForWord("hello my honey")
 
+
+
 val t = synchronizeInputArrays(arr,arr2)
 
 val rt = agentRespondWordForWord(t)
 
-println(rt._1)
-println(rt._2)
+
+def decodeTupleWordForWord(tuple:(Array[Array[Double]],Array[Array[Double]])):(String,String) = {
+  val decodedTuple = (decodeWordForWord(tuple._1),decodeWordForWord(tuple._2))
+  decodedTuple
+}
+
+println(rt._1.length)
+
+def printResponse(responseTuple:(String,String)): Unit ={
+  println("Ava says : "+responseTuple._2)
+  println("Ava predicts you'll say: "+responseTuple._1)
+}
+
+printResponse(decodeTupleWordForWord(rt))
 
 
-
+"".isEmpty
 
 
 

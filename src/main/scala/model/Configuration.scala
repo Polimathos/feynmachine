@@ -3,7 +3,8 @@ package model
 import com.ogmacorp.ogmaneo.Vec2i
 
 object Configuration {
-  val maxMessageLength = 20
+  val maxWordLength = 20
+  val maxNumberOfWords = 30
 
   val architectSeed = 1234
 
@@ -16,7 +17,7 @@ object Configuration {
   val layerNumber = 7
 
   //encoder dimensions
-  val encoderSize = 36
+  val encoderSize = 50
 
   val sfc_numSamples = 2
   //Size of a chunk
@@ -24,19 +25,19 @@ object Configuration {
   val sfc_ff_radius = 12
 
   //Number of steps to perform temporal pooling over, 1 means no pooling
-  val hl_poolSteps = 2
+  val hl_poolSteps = 1
 
   //Current layer prediction learning rate.
-  val p_alpha = 0.08f
+  val p_alpha = 0.075f
 
   //Feed back learning rate
-  val p_beta = 0.16f
+  val p_beta = 0.075f
 
   //Input field radius (onto hidden layers).
-  val p_radius = 12
+  val p_radius = 20
 
   //Small boosting factor
-  val sfc_gamma = 0.05f
+  val sfc_gamma = 0.01f
 
   //Weight initialization range
   val sfc_initWeightRange:(Int,Int)=(-1,1)

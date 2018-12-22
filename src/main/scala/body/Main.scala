@@ -17,6 +17,7 @@ object Main extends App {
       val iterations = readLine("determine a number of iterations: ").toInt
       learner.teachToRepeat(iterations)
     }
+    case 2 => learner.checkEncoderDecoder
     case _ => println("not one of the available options")
   }
 }

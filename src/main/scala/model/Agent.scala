@@ -5,7 +5,7 @@ import scala.io.Source
 
 class Agent {
   val encoderDecoder = new EncoderDecoder
-  val feynmanMachine = new FeynmanMachine(encoderDecoder.maxMessageLength, encoderDecoder.chars.length)
+  val feynmanMachine = new FeynmanMachine(encoderDecoder.maxWordLength, encoderDecoder.chars.length)
 
   def processTrainingExamples(filePath:String): List[String] ={
     val candidate = Source.fromFile(filePath).getLines.toList
@@ -21,11 +21,18 @@ class Agent {
     val lines = processTrainingExamples(filePath)
     for (iter <- 0 to cycles){
         for (examples <- lines.sliding(2,2)){
-          val inputArray = encoderDecoder.encodeWordForWord(examples.head)
-          val trainExampleArray = encoderDecoder.encodeWordForWord(examples.last)
 
-          encoderDecoder.synchronizeInputArrays()
-          agentRespondWordForWord(inputArray,trainExampleArray)
+          printResponse(
+            encoderDecoder.decodeTupleWordForWord(
+              agentRespondWordForWord(
+                encoderDecoder.synchronizeInputArrays(
+                  encoderDecoder.encodeTupleWordForWord(
+                    examples.head,examples.last
+                  )
+                )
+              )
+            )
+          )
         }
     }
     feynmanMachine.saveHierarchy
@@ -53,7 +60,11 @@ class Agent {
         else {
           encoderDecoder.encodeWordForWord(LastMachineResponse)
         }
-      val responseTuple = agentRespondWordForWord(inputArray, trainExampleArray)
+      val responseTuple = agentRespondWordForWord(
+        encoderDecoder.synchronizeInputArrays(
+          inputArray, trainExampleArray
+        )
+      )
       val decodedTuple = encoderDecoder.decodeTupleWordForWord(responseTuple)
       printResponse(decodedTuple)
       LastMachineResponse = decodedTuple._2
@@ -81,5 +92,18 @@ class Agent {
       machineResponse ++= Array(machineWord)
     }
     (nextInputPrediction,machineResponse)
+  }
+
+  def checkEncoderDecoder(): Unit ={
+    val input = readLine("your message:")
+    val trainExample = readLine("What should the bot say?: ")
+    printResponse(
+      encoderDecoder.decodeTupleWordForWord(
+        encoderDecoder.encodeTupleWordForWord(
+          input,
+          trainExample
+        )
+      )
+    )
   }
 }
