@@ -7,22 +7,25 @@ class Agent {
   val encoderDecoder = new EncoderDecoder
   val feynmanMachine = new FeynmanMachine(encoderDecoder.maxMessageLength, encoderDecoder.chars.length)
 
+  def processTrainingExamples(filePath:String): List[String] ={
+    val candidate = Source.fromFile(filePath).getLines.toList
+    if (candidate.length % 2 == 1){
+      candidate.dropRight(1)
+    } else {
+      candidate
+    }
+  }
+
   def teachToRepeat(cycles:Int=100): Unit ={
     val filePath = Configuration.conversationsFile
-    val lines = {
-      val candidate = Source.fromFile(filePath).getLines.toList
-      if (candidate.length % 2 == 1){
-        candidate.dropRight(1)
-      } else {
-        candidate
-      }
-    }
+    val lines = processTrainingExamples(filePath)
     for (iter <- 0 to cycles){
         for (examples <- lines.sliding(2,2)){
-          println(examples)
-          val inputArray = encoderDecoder.encode(examples.head)
-          val trainExampleArray = encoderDecoder.encode(examples.last)
-          agentRespond(inputArray,trainExampleArray)
+          val inputArray = encoderDecoder.encodeWordForWord(examples.head)
+          val trainExampleArray = encoderDecoder.encodeWordForWord(examples.last)
+
+          encoderDecoder.synchronizeInputArrays()
+          agentRespondWordForWord(inputArray,trainExampleArray)
         }
     }
     feynmanMachine.saveHierarchy
@@ -32,42 +35,51 @@ class Agent {
     var running = true
     var training = true
     var LastMachineResponse = ""
-
     while (running) {
       val input = readLine("your message:")
-
       if (input.matches("!save")) {
         feynmanMachine.saveHierarchy
-        val input = readLine("your message:")
       }
       if (input.matches("!stop")) {
         running = false
       }
-
       training = feynmanMachine.trainingSwitch(input, training)
-
-      val inputArray = encoderDecoder.encode(input)
-
+      val inputArray = encoderDecoder.encodeWordForWord(input)
       val trainExampleArray =
         if (training) {
           val trainExample = readLine("What should the bot say?: ")
-          encoderDecoder.encode(trainExample)
+          encoderDecoder.encodeWordForWord(trainExample)
         }
         else {
-          encoderDecoder.encode(LastMachineResponse)
+          encoderDecoder.encodeWordForWord(LastMachineResponse)
         }
-      LastMachineResponse = agentRespond(inputArray, trainExampleArray)
+      val responseTuple = agentRespondWordForWord(inputArray, trainExampleArray)
+      val decodedTuple = encoderDecoder.decodeTupleWordForWord(responseTuple)
+      printResponse(decodedTuple)
+      LastMachineResponse = decodedTuple._2
     }
     feynmanMachine.saveHierarchy
   }
 
-  def agentRespond(inputArray:Array[Double], trainExampleArray:Array[Double]):String = {
+  def agentRespond(inputArray:Array[Double], trainExampleArray:Array[Double]):(Array[Double], Array[Double]) = {
     val (nextInputPredictionArray, machineResponseArray) = feynmanMachine.hierarchyStep(inputArray, trainExampleArray)
-    val nextInputPrediction = encoderDecoder.decode(nextInputPredictionArray)
-    val machineResponse = encoderDecoder.decode(machineResponseArray)
-    println("bot says: " + nextInputPrediction)
-    println("Bot predicts you'll say: " + machineResponse)
-    machineResponse
+    (nextInputPredictionArray,machineResponseArray)
   }
 
+  def printResponse(responseTuple:(String,String)): Unit ={
+    println("Ava says : "+responseTuple._2)
+    println("Ava predicts you'll say: "+responseTuple._1)
+  }
+
+  def agentRespondWordForWord(messageArrayTuple:(Array[Array[Double]],Array[Array[Double]])):(Array[Array[Double]], Array[Array[Double]]) ={
+    val zippedArrays = messageArrayTuple._1.zip(messageArrayTuple._2)
+    var nextInputPrediction = Array[Array[Double]]()
+    var machineResponse = Array[Array[Double]]()
+    for (tuple <- zippedArrays){
+      val (nextInputWord, machineWord) = agentRespond(tuple._1, tuple._2)
+      nextInputPrediction ++= Array(nextInputWord)
+      machineResponse ++= Array(machineWord)
+    }
+    (nextInputPrediction,machineResponse)
+  }
 }

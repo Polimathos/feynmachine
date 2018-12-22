@@ -3,17 +3,17 @@ package model
 import com.ogmacorp.ogmaneo.Vec2i
 
 object Configuration {
-  val maxMessageLength = 140
+  val maxMessageLength = 20
 
   val architectSeed = 1234
 
   //Current layer prediction learning rate
-  val in_p_alpha = 0.05f
+  val in_p_alpha = 0.09f
   //Input field radius (onto hidden layers)
   val in_p_radius = 20
 
   //layers of the hierarchy
-  val layerNumber = 2
+  val layerNumber = 7
 
   //encoder dimensions
   val encoderSize = 36
@@ -41,5 +41,5 @@ object Configuration {
   //Weight initialization range
   val sfc_initWeightRange:(Int,Int)=(-1,1)
 
-  val conversationsFile = "/home/mgonzalo/Escritorio/research/feynman machine/src/main/resources/conversationsTraining.txt"
+  val conversationsFile = "/home/mgonzalo/Escritorio/research/feynman machine/src/main/resources/conversationsShort.txt"
 }
